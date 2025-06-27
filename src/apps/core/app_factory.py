@@ -18,9 +18,9 @@ class AppFactory:
     def create_runner(self, app_name: Optional[str] = None) -> Runner:
         """创建 Runner 实例"""
         # 延迟导入以避免循环依赖
-        from ..agents.my_agent import create_my_agent
+        from ..agents.my_custom_app.agent import root_agent
         
-        agent = create_my_agent(self.config)
+        agent = root_agent
         runner_app_name = app_name or self.config.app_name
         
         if self.config.use_in_memory:
