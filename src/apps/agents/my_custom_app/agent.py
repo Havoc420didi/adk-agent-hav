@@ -11,8 +11,8 @@ sys.path.insert(0, str(project_root / "src"))
 
 from google.adk.agents import Agent
 from google.adk.models.lite_llm import LiteLlm
-from apps.core.config import AppConfig
-from apps.tools.custom_tools import get_custom_tools
+from .config import AppConfig
+from .custom_tools import get_custom_tools
 
 
 class MyCustomAppAgent(Agent):
