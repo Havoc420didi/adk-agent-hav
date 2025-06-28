@@ -27,8 +27,11 @@ from smiles_file.models import File
 # TEMP
 import pandas as pd
 
-# 设置工作目录
-os.chdir('/home/data2/rhj/project/bsl_drug_backend')
+# 设置工作目录（使用相对路径）
+import sys
+from pathlib import Path
+bsl_root = Path(__file__).parent.parent
+os.chdir(str(bsl_root))
 os.environ['CUDA_VISIBLE_DEVICES'] = '6'
 
 # 为每个任务工具创建实例
@@ -53,7 +56,7 @@ tools = [
 llm = Ollama(model="drug_tools_v4:latest", request_timeout=120.0)
 
 # 读取系统提示模板文件
-file_path = '/home/data2/rhj/project/bsl_drug_backend/agent_with_memory/core/agent/react/templates/read_memory_pool.md'
+file_path = bsl_root / 'agent_with_memory/core/agent/react/templates/read_memory_pool.md'
 with open(file_path, 'r') as file:
     react_system_header_str = str(file.read())
 react_system_prompt = PromptTemplate(react_system_header_str)  # 使用模板创建 PromptTemplate 实例

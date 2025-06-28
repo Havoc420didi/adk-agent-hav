@@ -134,11 +134,12 @@ def predict_drug_drug_interaction(drug1_smiles: str, drug2_smiles: str) -> str:
         预测结果的描述
     """
     try:
-        result = drug_drug_response_predict(drug1_smiles, drug2_smiles)
+        # 将两个SMILES字符串组合成数组格式
+        smiles_pairs = [[drug1_smiles, drug2_smiles]]
+        result = drug_drug_response_predict(smiles_pairs)
         return f"药物-药物相互作用预测完成。结果：{result}"
     except Exception as e:
         return f"药物-药物相互作用预测失败：{str(e)}"
-
 
 def generate_drug_candidates(cell_line: Optional[str] = None, target_response: Optional[float] = None) -> str:
     """
@@ -175,7 +176,7 @@ def design_synthesis_pathway(target_smiles: str) -> str:
         return f"逆合成路径设计失败：{str(e)}"
 
 
-def optimize_drug_cell_response(drug_smiles: str, cell_line: Optional[str] = None, optimization_target: Optional[str] = None) -> str:
+def optimize_drug_cell_response(drug_smiles: str, cell_line: Optional[str] = None, optimization_target: Optional[str] = None, mask: Optional[str] = None) -> str:
     """
     优化药物-细胞反应
     
@@ -183,6 +184,7 @@ def optimize_drug_cell_response(drug_smiles: str, cell_line: Optional[str] = Non
         drug_smiles: 药物的SMILES字符串，支持单个分子字符串或用逗号分隔的多个SMILES字符串
         cell_line: 细胞系名称（可选）
         optimization_target: 优化目标（可选）
+        mask: 用于指定分子或数据中需要重点关注的掩码（可选）
     
     Returns:
         优化结果的描述
@@ -190,14 +192,26 @@ def optimize_drug_cell_response(drug_smiles: str, cell_line: Optional[str] = Non
     try:
         # 统一处理SMILES输入格式
         smiles_list = _process_smiles_input(drug_smiles)
-        result = drug_cell_response_regression_optimization(smiles_list, cell_line, optimization_target)
+        
+        # 处理mask参数
+        if mask is None:
+            mask = []  # 默认空掩码
+        
+        # 调用优化函数，传入mask参数
+        result = drug_cell_response_regression_optimization(optimization_target, cell_line, smiles_list[0], mask)
         return f"药物-细胞反应优化完成。结果：{result}"
     except Exception as e:
         return f"药物-细胞反应优化失败：{str(e)}"
-
 
 def get_drug_algorithm_tools():
     """获取药物算法工具列表（简化版，只包含药物性质预测工具）"""
     return [
         FunctionTool(predict_drug_properties),
+        FunctionTool(predict_drug_cell_response),
+        FunctionTool(predict_drug_target_affinity_regression),
+        FunctionTool(predict_drug_target_affinity_classification),
+        FunctionTool(predict_drug_drug_interaction),
+        FunctionTool(generate_drug_candidates),
+        FunctionTool(design_synthesis_pathway),
+        FunctionTool(optimize_drug_cell_response),
     ] 
