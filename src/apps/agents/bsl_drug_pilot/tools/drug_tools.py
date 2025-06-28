@@ -7,78 +7,28 @@ import os
 from pathlib import Path
 from typing import List, Optional
 
-# 添加算法目录到Python路径
-algorithm_root = Path(__file__).parent.parent / "algorithm"
+# 添加bsl_drug_pilot目录到Python路径，这样algorithm包就可以被正确导入
+bsl_root = Path(__file__).parent.parent
+sys.path.insert(0, str(bsl_root))
+
+# 同时也添加algorithm目录到路径（备用）
+algorithm_root = bsl_root / "algorithm"
 sys.path.insert(0, str(algorithm_root))
 
 # 设置工作目录以匹配原始算法的预期路径
 original_cwd = os.getcwd()
-bsl_root = algorithm_root.parent
+os.chdir(str(bsl_root))
 
 from google.adk.tools.function_tool import FunctionTool
-
-# 导入算法函数
-def _import_algorithm_functions():
-    """动态导入算法函数，处理路径问题"""
-    try:
-        # 确保算法路径在sys.path中
-        if str(algorithm_root) not in sys.path:
-            sys.path.insert(0, str(algorithm_root))
-            
-        from apps.agents.bsl_drug_pilot.algorithm.drug_property.main import drug_property_prediction
-        from apps.agents.bsl_drug_pilot.algorithm.drug_cell_response_regression.main import drug_cell_response_regression_predict
-        from apps.agents.bsl_drug_pilot.algorithm.drug_target_affinity_regression.main import drug_target_affinity_regression_predict
-        from apps.agents.bsl_drug_pilot.algorithm.drug_target_affinity_classification.main import drug_target_classification_prediction
-        from apps.agents.bsl_drug_pilot.algorithm.drug_drug_response.main import drug_drug_response_predict
-        from apps.agents.bsl_drug_pilot.algorithm.drug_generation.main import drug_cell_response_regression_generation
-        from apps.agents.bsl_drug_pilot.algorithm.drug_synthesis_design.scripts.main import Retrosynthetic_reaction_pathway_prediction
-        from apps.agents.bsl_drug_pilot.algorithm.drug_cell_response_regression_optimization.main import drug_cell_response_regression_optimization
+from ..algorithm.drug_property.main import drug_property_prediction
+from ..algorithm.drug_cell_response_regression.main import drug_cell_response_regression_predict
+from ..algorithm.drug_target_affinity_regression.main import drug_target_affinity_regression_predict
+from ..algorithm.drug_target_affinity_classification.main import drug_target_classification_prediction
+from ..algorithm.drug_drug_response.main import drug_drug_response_predict
+from ..algorithm.drug_generation.main import drug_cell_response_regression_generation
+from ..algorithm.drug_synthesis_design.scripts.main import Retrosynthetic_reaction_pathway_prediction
+from ..algorithm.drug_cell_response_regression_optimization.main import drug_cell_response_regression_optimization
         
-        return {
-            'drug_property_prediction': drug_property_prediction,
-            'drug_cell_response_regression_predict': drug_cell_response_regression_predict,
-            'drug_target_affinity_regression_predict': drug_target_affinity_regression_predict,
-            'drug_target_classification_prediction': drug_target_classification_prediction,
-            'drug_drug_response_predict': drug_drug_response_predict,
-            'drug_cell_response_regression_generation': drug_cell_response_regression_generation,
-            'Retrosynthetic_reaction_pathway_prediction': Retrosynthetic_reaction_pathway_prediction,
-            'drug_cell_response_regression_optimization': drug_cell_response_regression_optimization,
-        }
-    except ImportError as e:
-        print(f"警告：无法导入算法模块: {e}")
-        print(f"算法路径: {algorithm_root}")
-        print(f"当前工作目录: {os.getcwd()}")
-        print(f"Python路径: {sys.path[:3]}...")
-        
-        # 定义占位符函数
-        def placeholder_func(*args, **kwargs):
-            return f"算法模块未正确安装或配置。错误: {e}"
-        
-        return {
-            'drug_property_prediction': placeholder_func,
-            'drug_cell_response_regression_predict': placeholder_func,
-            'drug_target_affinity_regression_predict': placeholder_func,
-            'drug_target_classification_prediction': placeholder_func,
-            'drug_drug_response_predict': placeholder_func,
-            'drug_cell_response_regression_generation': placeholder_func,
-            'Retrosynthetic_reaction_pathway_prediction': placeholder_func,
-            'drug_cell_response_regression_optimization': placeholder_func,
-        }
-
-# 动态导入算法函数
-_algorithm_functions = _import_algorithm_functions()
-
-# 将函数分配到全局命名空间
-drug_property_prediction = _algorithm_functions['drug_property_prediction']
-drug_cell_response_regression_predict = _algorithm_functions['drug_cell_response_regression_predict']
-drug_target_affinity_regression_predict = _algorithm_functions['drug_target_affinity_regression_predict']
-drug_target_classification_prediction = _algorithm_functions['drug_target_classification_prediction']
-drug_drug_response_predict = _algorithm_functions['drug_drug_response_predict']
-drug_cell_response_regression_generation = _algorithm_functions['drug_cell_response_regression_generation']
-Retrosynthetic_reaction_pathway_prediction = _algorithm_functions['Retrosynthetic_reaction_pathway_prediction']
-drug_cell_response_regression_optimization = _algorithm_functions['drug_cell_response_regression_optimization']
-
-
 def _process_smiles_input(drug_smiles: str):
     """统一处理SMILES输入格式，将逗号分隔的字符串转换为列表"""
     if ',' in drug_smiles:
@@ -247,14 +197,7 @@ def optimize_drug_cell_response(drug_smiles: str, cell_line: Optional[str] = Non
 
 
 def get_drug_algorithm_tools():
-    """获取所有药物算法工具列表"""
+    """获取药物算法工具列表（简化版，只包含药物性质预测工具）"""
     return [
         FunctionTool(predict_drug_properties),
-        FunctionTool(predict_drug_cell_response),
-        FunctionTool(predict_drug_target_affinity_regression),
-        FunctionTool(predict_drug_target_affinity_classification),
-        FunctionTool(predict_drug_drug_interaction),
-        FunctionTool(generate_drug_candidates),
-        FunctionTool(design_synthesis_pathway),
-        FunctionTool(optimize_drug_cell_response),
     ] 
